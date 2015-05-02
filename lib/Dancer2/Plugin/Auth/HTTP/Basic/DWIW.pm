@@ -17,21 +17,29 @@ register http_basic_auth => sub {
     return sub {
         my $error = 0;
 
-        my @auth_header =
-          split( ' ', $dsl->app->request->header('Authorization') );
-        my $auth_method = $auth_header[0];
-        my $auth_string = $auth_header[1];
+        my $header = $dsl->app->request->header('Authorization');
 
-        $error = 1 if $auth_method ne 'Basic';
+        $error = 1 unless defined $header;
 
-        my @auth_parts = split( ':', decode_base64($auth_string) );
+        my @auth_header = split( ' ', $header ) unless $error;
 
-        $error = 1 if $auth_parts[0] eq '';
-        $error = 1 if $auth_parts[1] eq '';
+        $error = 1 unless scalar(@auth_header) == 2;
+
+        my $auth_method = $auth_header[0] unless $error;
+        my $auth_string = $auth_header[1] unless $error;
+
+        $error = 1 if !$error && $auth_method ne 'Basic';
+
+        my @auth_parts = split( ':', decode_base64($auth_string) )
+          unless $error;
+
+        $error = 1 if !$error && $auth_parts[0] eq '';
+        $error = 1 if !$error && $auth_parts[1] eq '';
 
         if ( !$error && ref($CHECK_LOGIN_HANDLER) eq 'CODE' ) {
-            $error = 1
-              if !$CHECK_LOGIN_HANDLER->( $auth_parts[0], $auth_parts[1] );
+            my $check_result = $CHECK_LOGIN_HANDLER->( $auth_parts[0], $auth_parts[1] );
+
+            $error = 1 unless $check_result;
         }
 
         if ( !$error ) {
