@@ -5,7 +5,7 @@ use warnings;
 use Convert::Base64;
 use Dancer2::Plugin;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 our $CHECK_LOGIN_HANDLER = undef;
 
