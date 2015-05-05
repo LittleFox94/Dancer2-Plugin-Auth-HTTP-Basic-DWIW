@@ -16,7 +16,7 @@ register http_basic_auth => sub {
 
     return sub {
         local $@ = undef;
-        
+
         eval {
             my $header = $dsl->app->request->header('Authorization') || die 401;
 
@@ -30,7 +30,7 @@ register http_basic_auth => sub {
 
             if (ref($CHECK_LOGIN_HANDLER) eq 'CODE') {
                 local $@ = undef;
-                
+
                 my $check_result = eval { $CHECK_LOGIN_HANDLER->($username, $password); };
 
                 unless ($@) {
@@ -52,7 +52,7 @@ register http_basic_auth => sub {
 
             $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
             $dsl->status($error_code);
-            return $@;
+            return $error_code;
         }
     };
 };
