@@ -49,8 +49,8 @@ my $res3  = $test3->request(
     )
 );
 
-is( $res3->code, 401,
-    '[Checked user, incorrect login] Correct status code (401)' );
+is( $res3->code, 403,
+    '[Checked user, incorrect login] Correct status code (403)' );
 is(
     $res3->header('WWW-Authenticate'),
     'Basic realm="Please login"',

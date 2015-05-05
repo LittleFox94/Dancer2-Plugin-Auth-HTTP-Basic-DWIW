@@ -10,45 +10,44 @@ our $VERSION = '0.01';
 our $CHECK_LOGIN_HANDLER = undef;
 
 register http_basic_auth => sub {
-    my ( $dsl, $stuff, $sub, @other_stuff ) = plugin_args(@_);
+    my ($dsl, $stuff, $sub, @other_stuff) = plugin_args(@_);
 
     my $realm = plugin_setting->{'realm'} || 'Please login';
 
     return sub {
-        my $error = 0;
+        eval {
+            my $header = $dsl->app->request->header('Authorization') or die 401;
 
-        my $header = $dsl->app->request->header('Authorization');
+            my ($auth_method, $auth_string) = split(' ', $header) or die 400;
 
-        $error = 1 unless defined $header;
+            if ($auth_method ne 'Basic' || $auth_string eq '') {
+                die 400;
+            }
 
-        my @auth_header = split( ' ', $header ) unless $error;
+            my ($username, $password) = split(':', decode_base64($auth_string));
 
-        $error = 1 unless scalar(@auth_header) == 2;
+            if ($username eq '' || $password eq '') {
+                die 401;
+            }
 
-        my $auth_method = $auth_header[0] unless $error;
-        my $auth_string = $auth_header[1] unless $error;
+            if (ref($CHECK_LOGIN_HANDLER) eq 'CODE') {
+                my $check_result = $CHECK_LOGIN_HANDLER->($username, $password);
 
-        $error = 1 if !$error && $auth_method ne 'Basic';
+                if (!$check_result) {
+                    die 403;
+                }
+            }
+        };
 
-        my @auth_parts = split( ':', decode_base64($auth_string) )
-          unless $error;
-
-        $error = 1 if !$error && $auth_parts[0] eq '';
-        $error = 1 if !$error && $auth_parts[1] eq '';
-
-        if ( !$error && ref($CHECK_LOGIN_HANDLER) eq 'CODE' ) {
-            my $check_result = $CHECK_LOGIN_HANDLER->( $auth_parts[0], $auth_parts[1] );
-
-            $error = 1 unless $check_result;
-        }
-
-        if ( !$error ) {
-            return $sub->( $dsl, @other_stuff );
+        unless ($@) {
+            return $sub->($dsl, @other_stuff);
         }
         else {
-            $dsl->header(
-                'WWW-Authenticate' => 'Basic realm="' . $realm . '"' );
-            $dsl->status(401);
+            my ($error_code) = split(' ', $@);
+
+            $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
+            $dsl->status($error_code);
+            return $error_code;
         }
     };
 };
@@ -57,18 +56,17 @@ register http_basic_auth_login => sub {
     my ($dsl) = plugin_args(@_);
     my $app = $dsl->app;
 
-    my @auth_header =
-      split( ' ', $dsl->app->request->header('Authorization') );
+    my @auth_header = split(' ', $dsl->app->request->header('Authorization'));
     my $auth_string = $auth_header[1];
 
-    my @auth_parts = split( ':', decode_base64($auth_string) );
+    my @auth_parts = split(':', decode_base64($auth_string));
 
     return @auth_parts;
-  },
-  { is_global => 0 };
+    },
+    {is_global => 0};
 
 register http_basic_auth_set_check_handler => sub {
-    my ( $dsl, $handler ) = plugin_args(@_);
+    my ($dsl, $handler) = plugin_args(@_);
     $CHECK_LOGIN_HANDLER = $handler;
 };
 
