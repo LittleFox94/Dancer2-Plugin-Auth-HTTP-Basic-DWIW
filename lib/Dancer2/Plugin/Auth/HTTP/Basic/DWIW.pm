@@ -15,26 +15,31 @@ register http_basic_auth => sub {
     my $realm = plugin_setting->{'realm'} || 'Please login';
 
     return sub {
+        local $@ = undef;
+        
         eval {
-            my $header = $dsl->app->request->header('Authorization') or die 401;
+            my $header = $dsl->app->request->header('Authorization') || die 401;
 
-            my ($auth_method, $auth_string) = split(' ', $header) or die 400;
+            my ($auth_method, $auth_string) = split(' ', $header);
 
-            if ($auth_method ne 'Basic' || $auth_string eq '') {
-                die 400;
-            }
+            $auth_method ne 'Basic' || $auth_string || die 400;
 
             my ($username, $password) = split(':', decode_base64($auth_string));
 
-            if ($username eq '' || $password eq '') {
-                die 401;
-            }
+            $username || $password || die 401;
 
             if (ref($CHECK_LOGIN_HANDLER) eq 'CODE') {
-                my $check_result = $CHECK_LOGIN_HANDLER->($username, $password);
+                local $@ = undef;
+                
+                my $check_result = eval { $CHECK_LOGIN_HANDLER->($username, $password); };
 
-                if (!$check_result) {
-                    die 403;
+                unless ($@) {
+                    if (!$check_result) {
+                        die 403;
+                    }
+                }
+                else {
+                    die 500;
                 }
             }
         };
@@ -47,7 +52,7 @@ register http_basic_auth => sub {
 
             $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
             $dsl->status($error_code);
-            return $error_code;
+            return $@;
         }
     };
 };
