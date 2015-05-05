@@ -9,3 +9,4 @@ t/pod-coverage.t
 t/pod.t
 t/plugin.t
 t/plugin_simple.t
+t/bad_stuff.t
