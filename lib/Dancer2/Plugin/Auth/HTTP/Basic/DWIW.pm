@@ -35,7 +35,7 @@ register http_basic_auth => sub {
 
                 unless ($@) {
                     if (!$check_result) {
-                        die 403;
+                        die 401;
                     }
                 }
                 else {
