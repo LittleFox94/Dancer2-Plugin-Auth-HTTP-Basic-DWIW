@@ -1,5 +1,8 @@
 Revision history for Dancer2-Plugin-Auth-HTTP-Basic-DWIW
 
-0.01    Date/time
+0.02    2015-05-06
+        Made the error handling nicer and more robust
+
+0.01    2015-05-02
         First version, released on an unsuspecting world.
 
