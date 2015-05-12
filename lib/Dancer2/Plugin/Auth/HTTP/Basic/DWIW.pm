@@ -2,10 +2,10 @@ package Dancer2::Plugin::Auth::HTTP::Basic::DWIW;
 
 use strict;
 use warnings;
-use Convert::Base64;
+use MIME::Base64;
 use Dancer2::Plugin;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 our $CHECK_LOGIN_HANDLER = undef;
 
@@ -15,31 +15,26 @@ register http_basic_auth => sub {
     my $realm = plugin_setting->{'realm'} || 'Please login';
 
     return sub {
-        local $@ = undef;
-
         eval {
-            my $header = $dsl->app->request->header('Authorization') || die 401;
+            my $header = $dsl->app->request->header('Authorization') || die \401;
 
             my ($auth_method, $auth_string) = split(' ', $header);
 
-            $auth_method ne 'Basic' || $auth_string || die 400;
+            $auth_method ne 'Basic' || $auth_string || die \400;
 
             my ($username, $password) = split(':', decode_base64($auth_string));
 
-            $username || $password || die 401;
+            $username || $password || die \401;
 
             if (ref($CHECK_LOGIN_HANDLER) eq 'CODE') {
-                local $@ = undef;
-
                 my $check_result = eval { $CHECK_LOGIN_HANDLER->($username, $password); };
 
-                unless ($@) {
-                    if (!$check_result) {
-                        die 401;
-                    }
+                if($@) {
+                    die \500;
                 }
-                else {
-                    die 500;
+
+                if(!$check_result) {
+                    die \401;
                 }
             }
         };
@@ -48,7 +43,7 @@ register http_basic_auth => sub {
             return $sub->($dsl, @other_stuff);
         }
         else {
-            my ($error_code) = split(' ', $@);
+            my $error_code = ${$@};
 
             $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
             $dsl->status($error_code);
@@ -87,7 +82,7 @@ Dancer2::Plugin::Auth::HTTP::Basic::DWIW - HTTP Basic authentication plugin that
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =head1 SYNOPSYS
 
