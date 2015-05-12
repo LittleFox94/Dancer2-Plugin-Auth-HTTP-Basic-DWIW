@@ -1,11 +1,10 @@
 package Dancer2::Plugin::Auth::HTTP::Basic::DWIW;
+# ABSTRACT: HTTP Basic authentication plugin for Dancer2 that does what I want.
 
 use strict;
 use warnings;
 use MIME::Base64;
 use Dancer2::Plugin;
-
-our $VERSION = '0.03';
 
 our $CHECK_LOGIN_HANDLER = undef;
 
@@ -75,14 +74,6 @@ register_plugin for_versions => [2];
 __END__
 
 =pod
-
-=head1 NAME
-
-Dancer2::Plugin::Auth::HTTP::Basic::DWIW - HTTP Basic authentication plugin that does what I want.
-
-=head1 VERSION
-
-Version 0.03
 
 =head1 SYNOPSYS
 
