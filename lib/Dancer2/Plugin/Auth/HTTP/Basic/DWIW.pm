@@ -1,8 +1,9 @@
+use strict;
+use warnings;
+
 package Dancer2::Plugin::Auth::HTTP::Basic::DWIW;
 # ABSTRACT: HTTP Basic authentication plugin for Dancer2 that does what I want.
 
-use strict;
-use warnings;
 use MIME::Base64;
 use Dancer2::Plugin;
 
