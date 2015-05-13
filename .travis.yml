@@ -6,5 +6,5 @@ perl:
   - "5.14"
 
 env: AUTHOR_TESTING=1 RELEASE_TESTING=1
-install: cpanm Dancer2 Dist::Zilla
+install: cpanm Dancer2
 script: dzil build && dzil test
