@@ -6,5 +6,5 @@ perl:
   - "5.14"
 
 env: AUTHOR_TESTING=1 RELEASE_TESTING=1
-install: cpanm --quiet --notest Dancer2 Dancer2::Plugin && dzil authordeps --missing | cpanm --quiet --notest
+install: cpanm --quiet --notest Dancer2 Dancer2::Plugin Pod::Coverage::TrustPod && dzil authordeps --missing | cpanm --quiet --notest
 script: dzil build && dzil test
