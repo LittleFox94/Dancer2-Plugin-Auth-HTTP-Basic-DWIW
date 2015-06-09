@@ -76,7 +76,7 @@ __END__
 
 =pod
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     package test;
 
