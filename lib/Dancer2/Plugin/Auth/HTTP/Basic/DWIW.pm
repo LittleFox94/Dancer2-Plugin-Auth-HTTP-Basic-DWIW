@@ -10,7 +10,7 @@ use Dancer2::Plugin;
 our $CHECK_LOGIN_HANDLER = undef;
 
 register http_basic_auth => sub {
-    my ($dsl, $stuff, $sub, @other_stuff) = plugin_args(@_);
+    my ($dsl, $stuff, $sub, @other_stuff) = @_;
 
     my $realm = plugin_setting->{'realm'} || 'Please login';
 
@@ -53,7 +53,7 @@ register http_basic_auth => sub {
 };
 
 register http_basic_auth_login => sub {
-    my ($dsl) = plugin_args(@_);
+    my ($dsl) = @_;
     my $app = $dsl->app;
 
     my @auth_header = split(' ', $dsl->app->request->header('Authorization'));
@@ -66,7 +66,7 @@ register http_basic_auth_login => sub {
     {is_global => 0};
 
 register http_basic_auth_set_check_handler => sub {
-    my ($dsl, $handler) = plugin_args(@_);
+    my ($dsl, $handler) = @_;
     $CHECK_LOGIN_HANDLER = $handler;
 };
 
