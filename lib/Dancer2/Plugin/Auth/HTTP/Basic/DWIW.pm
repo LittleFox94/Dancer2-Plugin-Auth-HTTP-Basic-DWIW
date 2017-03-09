@@ -23,7 +23,7 @@ register http_basic_auth => sub {
 
             $auth_method ne 'Basic' || $auth_string || die \400;
 
-            my ($username, $password) = split(':', decode_base64($auth_string));
+            my ($username, $password) = split(':', decode_base64($auth_string), 2);
 
             $username || $password || die \401;
 
@@ -59,7 +59,7 @@ register http_basic_auth_login => sub {
 
     my @auth_header = split(' ', $dsl->app->request->header('Authorization'));
     my $auth_string = $auth_header[1];
-    my @auth_parts  = split(':', decode_base64($auth_string));
+    my @auth_parts  = split(':', decode_base64($auth_string), 2);
 
     return @auth_parts;
 },
