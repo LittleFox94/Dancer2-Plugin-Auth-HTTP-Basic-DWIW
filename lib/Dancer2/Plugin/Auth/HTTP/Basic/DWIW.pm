@@ -48,7 +48,7 @@ register http_basic_auth => sub {
 
             $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
             $dsl->status($error_code);
-            return $error_code;
+            return;
         }
     };
 };
