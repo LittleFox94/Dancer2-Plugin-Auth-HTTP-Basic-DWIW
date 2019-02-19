@@ -7,7 +7,10 @@ package Dancer2::Plugin::Auth::HTTP::Basic::DWIW;
 use MIME::Base64;
 use Dancer2::Plugin;
 
-our $CHECK_LOGIN_HANDLER = undef;
+our $HANDLERS = {
+    check_login => undef,
+    no_auth     => undef,
+};
 
 register http_basic_auth => sub {
     my ($dsl, $stuff, $sub, @other_stuff) = @_;
@@ -27,15 +30,17 @@ register http_basic_auth => sub {
 
             $username || $password || die \401;
 
-            if (ref($CHECK_LOGIN_HANDLER) eq 'CODE') {
-                my $check_result = eval { $CHECK_LOGIN_HANDLER->($username, $password); };
+            if(my $handler = $HANDLERS->{check_login}) {
+                if(ref($handler) eq 'CODE') {
+                    my $check_result = eval { $handler->($username, $password); };
 
-                if($@) {
-                    die \500;
-                }
+                    if($@) {
+                        die \500;
+                    }
 
-                if(!$check_result) {
-                    die \401;
+                    if(!$check_result) {
+                        die \401;
+                    }
                 }
             }
         };
@@ -48,6 +53,13 @@ register http_basic_auth => sub {
 
             $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
             $dsl->status($error_code);
+
+            if(my $handler = $HANDLERS->{no_auth}) {
+                if(ref($handler) eq 'CODE') {
+                    return $handler->();
+                }
+            }
+
             return;
         }
     };
@@ -69,7 +81,14 @@ register http_basic_auth_login => sub {
 
 register http_basic_auth_set_check_handler => sub {
     my ($dsl, $handler) = @_;
-    $CHECK_LOGIN_HANDLER = $handler;
+
+    warn 'This is deprecated! Please use http_basic_auth_handler check_login => sub {}';
+    $dsl->http_basic_auth_handler(check_login => $handler);
+};
+
+register http_basic_auth_handler => sub {
+    my ($dsl, $name, $handler) = @_;
+    $HANDLERS->{$name} = $handler;
 };
 
 register_plugin for_versions => [2];
@@ -85,11 +104,15 @@ __END__
     use Dancer2;
     use Dancer2::Plugin::Auth::HTTP::Basic::DWIW;
 
-    http_basic_auth_set_check_handler sub {
+    http_basic_auth_handler check_login => sub {
         my ( $user, $pass ) = @_;
 
         # you probably want to check the user in a better way
         return $user eq 'test' && $pass eq 'bla';
+    };
+
+    http_basic_auth_handler no_auth => sub {
+        template 'auth_error';
     };
 
     get '/' => http_basic_auth required => sub {
