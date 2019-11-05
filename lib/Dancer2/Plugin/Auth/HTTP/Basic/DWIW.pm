@@ -35,6 +35,7 @@ register http_basic_auth => sub {
                     my $check_result = eval { $handler->($username, $password); };
 
                     if($@) {
+                        $dsl->error("Error while validating credentials: $@");
                         die \500;
                     }
 

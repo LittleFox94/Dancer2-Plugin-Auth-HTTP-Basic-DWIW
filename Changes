@@ -1,5 +1,8 @@
 Revision history for Dancer2-Plugin-Auth-HTTP-Basic-DWIW
 
+0.07    2019-11-05
+        - log error when check_login handler fails
+
 0.06    2019-02-19
         - new way to configure handlers, look out for deprecation warnings!
         - allow returning custom content on authentication failure (HTTP 401)
