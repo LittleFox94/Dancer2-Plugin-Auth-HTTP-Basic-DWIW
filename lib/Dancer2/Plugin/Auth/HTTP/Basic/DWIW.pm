@@ -8,8 +8,9 @@ use MIME::Base64;
 use Dancer2::Plugin;
 
 our $HANDLERS = {
-    check_login => undef,
-    no_auth     => undef,
+    check_login       => undef,
+    check_login_async => undef,
+    no_auth           => undef,
 };
 
 register http_basic_auth => sub {
@@ -18,6 +19,19 @@ register http_basic_auth => sub {
     my $realm = plugin_setting->{'realm'} // 'Please login';
 
     return sub {
+        my $handle_error = sub {
+            my ($dsl, $status) = @_;
+
+            $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
+            $dsl->status($status);
+
+            if(my $handler = $HANDLERS->{no_auth}) {
+                if(ref($handler) eq 'CODE') {
+                    return $handler->();
+                }
+            }
+        };
+
         local $@ = undef;
         eval {
             my $header = $dsl->app->request->header('Authorization') || die \401;
@@ -43,6 +57,24 @@ register http_basic_auth => sub {
                     }
                 }
             }
+            elsif($handler = $HANDLERS->{check_login_async}) {
+                if(ref($handler) eq 'CODE') {
+                    return $dsl->delayed(sub {
+                        $handler->(
+                            $username, $password,
+                            sub {
+                                my ($valid) = @_;
+                                if($valid) {
+                                    $sub->($dsl, @other_stuff);
+                                }
+                                else {
+                                    $handle_error->($dsl, 401);
+                                }
+                            },
+                        );
+                    });
+                }
+            }
         };
 
         unless ($@) {
@@ -50,17 +82,7 @@ register http_basic_auth => sub {
         }
         else {
             my $error_code = ${$@};
-
-            $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
-            $dsl->status($error_code);
-
-            if(my $handler = $HANDLERS->{no_auth}) {
-                if(ref($handler) eq 'CODE') {
-                    return $handler->();
-                }
-            }
-
-            return;
+            return $handle_error->($dsl, $error_code);
         }
     };
 };
