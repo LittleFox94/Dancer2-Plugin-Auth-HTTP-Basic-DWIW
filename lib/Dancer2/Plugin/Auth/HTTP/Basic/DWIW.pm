@@ -149,7 +149,7 @@ Defaults to "Please login".
 
 =head1 ACCESSING THE APP INSTANCE
 
-Where you are using the handler, the first element of @_ will contain an instance of `'Dancer2::Plugin::Auth::HTTP::Basic::DWIW` rather than an instance of `Dancer2::Core::App`. If you need to access the instance of `Dancer2::Core::App` within a sub, instead of:
+Where you are using the handler, the first element of @_ will contain an instance of C<Dancer2::Plugin::Auth::HTTP::Basic::DWIW> rather than an instance of C<Dancer2::Core::App>. If you need to access the instance of C<Dancer2::Core::App> within a sub, instead of:
 
     sub /something => sub {
         my $app = shift;
