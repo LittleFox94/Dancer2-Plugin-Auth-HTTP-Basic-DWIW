@@ -147,6 +147,21 @@ Defaults to "Please login".
 
 =back
 
+=head1 ACCESSING THE APP INSTANCE
+
+Where you are using the handler, the first element of @_ will contain an instance of `'Dancer2::Plugin::Auth::HTTP::Basic::DWIW` rather than an instance of `Dancer2::Core::App`. If you need to access the instance of `Dancer2::Core::App` within a sub, instead of:
+
+    sub /something => sub {
+        my $app = shift;
+    }
+
+You will need to write:
+
+    sub /something => http_basic_auth required => sub {
+        my $self = shift;
+        my $app = $self->app;
+    }
+
 =head1 OTHER
 
 This is my first perl module published on CPAN. Please don't hurt me when it is bad and feel free to make suggestions or to fork it on GitHub.
