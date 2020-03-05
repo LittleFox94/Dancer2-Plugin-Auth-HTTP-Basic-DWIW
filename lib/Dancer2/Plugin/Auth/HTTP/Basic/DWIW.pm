@@ -47,7 +47,7 @@ register http_basic_auth => sub {
         };
 
         unless ($@) {
-            return $sub->($dsl, @other_stuff);
+            return $sub->($dsl->app, $dsl, @other_stuff);
         }
         else {
             my $error_code = ${$@};
@@ -146,21 +146,6 @@ The realm presented by browsers in the login dialog.
 Defaults to "Please login".
 
 =back
-
-=head1 ACCESSING THE APP INSTANCE
-
-Where you are using the handler, the first element of @_ will contain an instance of C<Dancer2::Plugin::Auth::HTTP::Basic::DWIW> rather than an instance of C<Dancer2::Core::App>. If you need to access the instance of C<Dancer2::Core::App> within a sub, instead of:
-
-    sub /something => sub {
-        my $app = shift;
-    }
-
-You will need to write:
-
-    sub /something => http_basic_auth required => sub {
-        my $self = shift;
-        my $app = $self->app;
-    }
 
 =head1 OTHER
 
