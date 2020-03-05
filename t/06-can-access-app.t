@@ -5,7 +5,6 @@ use HTTP::Request::Common;
 {
     package TestCanAccessAppInstance;
 
-    use Data::Dumper;
     use Dancer2;
     use Dancer2::Plugin::Auth::HTTP::Basic::DWIW;
 
