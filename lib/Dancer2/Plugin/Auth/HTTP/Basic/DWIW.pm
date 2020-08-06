@@ -47,7 +47,7 @@ register http_basic_auth => sub {
         };
 
         unless ($@) {
-            return $sub->($dsl->app, $dsl, @other_stuff);
+            return $sub->($dsl->app, @other_stuff);
         }
         else {
             my $error_code = ${$@};
