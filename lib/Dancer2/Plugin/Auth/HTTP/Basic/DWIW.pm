@@ -80,13 +80,6 @@ register http_basic_auth_login => sub {
     is_global => 0
 };
 
-register http_basic_auth_set_check_handler => sub {
-    my ($dsl, $handler) = @_;
-
-    warn 'This is deprecated! Please use http_basic_auth_handler check_login => sub {}';
-    $dsl->http_basic_auth_handler(check_login => $handler);
-};
-
 register http_basic_auth_handler => sub {
     my ($dsl, $name, $handler) = @_;
     $HANDLERS->{$name} = $handler;
