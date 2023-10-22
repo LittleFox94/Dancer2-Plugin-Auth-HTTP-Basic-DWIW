@@ -52,7 +52,7 @@ register http_basic_auth => sub {
         else {
             my $error_code = ${$@};
 
-            $dsl->header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
+            $dsl->response_header('WWW-Authenticate' => 'Basic realm="' . $realm . '"');
             $dsl->status($error_code);
 
             if(my $handler = $HANDLERS->{no_auth}) {
